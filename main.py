@@ -37,8 +37,6 @@ def pdf_to_document(uploaded_file):
 # 업로드된 파일 처리
 if uploaded_file is not None:
   pages = pdf_to_document(uploaded_file)
-  st.write(f"파일 업로드 완료: {uploaded_file.name}")
-  st.write("---")
 
   # Text Splitter
   text_splitter = RecursiveCharacterTextSplitter(
@@ -51,7 +49,10 @@ if uploaded_file is not None:
   texts = text_splitter.split_documents(pages)
 
   # Embedding
-  embeddings_model = OpenAIEmbeddings(model="text-embedding-3-large")
+  embeddings_model = OpenAIEmbeddings(
+    model="text-embedding-3-large",
+    openai_api_key=os.getenv("OPENAI_API_KEY")
+  )
 
   import chromadb
   chromadb.api.client.SharedSystemClient.clear_system_cache()
@@ -66,7 +67,12 @@ if uploaded_file is not None:
   if st.button("질문하기"):
     with st.spinner("Wait for it..."):
       # Retriever
-      llm = ChatOpenAI(temperature=0)
+      llm = ChatOpenAI(
+        temperature=0,
+        openai_api_base="https://openrouter.ai/api/v1",
+        openai_api_key=os.getenv("OPENROUTER_API_KEY"),
+        model_name="deepseek/deepseek-chat-v3-0324:free"
+      )
 
       retriever_from_llm = MultiQueryRetriever.from_llm(
         retriever=db.as_retriever(), llm=llm
