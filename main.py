@@ -22,7 +22,12 @@ st.title("ChatPDF")
 st.write("---")
 
 # 파일 업로드
-uploaded_file = st.file_uploader("PDF 파일 업로드", type=["pdf"])
+uploaded_file = st.file_uploader("PDF 파일 업로드", type=["pdf"], help="최대 5MB까지 업로드 가능합니다.")
+
+# 파일 크기 체크 (5MB = 5 * 1024 * 1024 bytes)
+if uploaded_file is not None and uploaded_file.size > 5 * 1024 * 1024:
+  st.error("파일 크기가 5MB를 초과합니다. 더 작은 파일을 업로드해주세요.")
+  uploaded_file = None
 st.write("---")
 
 def pdf_to_document(uploaded_file):
