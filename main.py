@@ -49,6 +49,9 @@ if uploaded_file is not None:
   # Embedding
   embeddings_model = OpenAIEmbeddings(model="text-embedding-3-large")
 
+  import chromadb
+  chromadb.api.client.SharedSystemClient.clear_system_cache()
+
   # Chroma DB
   db = Chroma.from_documents(texts, embeddings_model)
 
