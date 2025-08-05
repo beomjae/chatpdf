@@ -15,11 +15,15 @@ from langchain import hub
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 import streamlit as st
+import chromadb
 
 
 # 제목
 st.title("ChatPDF")
 st.write("---")
+
+# OPENAI 키 입력받기
+openai_key = st.text_input('OPENAI_API_KEY', type='password')
 
 # 파일 업로드
 uploaded_file = st.file_uploader("PDF 파일 업로드", type=["pdf"], help="최대 5MB까지 업로드 가능합니다.")
@@ -56,10 +60,9 @@ if uploaded_file is not None:
   # Embedding
   embeddings_model = OpenAIEmbeddings(
     model="text-embedding-3-large",
-    openai_api_key=os.getenv("OPENAI_API_KEY")
+    openai_api_key=openai_key
   )
 
-  import chromadb
   chromadb.api.client.SharedSystemClient.clear_system_cache()
 
   # Chroma DB
@@ -74,9 +77,7 @@ if uploaded_file is not None:
       # Retriever
       llm = ChatOpenAI(
         temperature=0,
-        openai_api_base="https://openrouter.ai/api/v1",
-        openai_api_key=os.getenv("OPENROUTER_API_KEY"),
-        model_name="deepseek/deepseek-chat-v3-0324:free"
+        openai_api_key=openai_key,
       )
 
       retriever_from_llm = MultiQueryRetriever.from_llm(
@@ -98,5 +99,5 @@ if uploaded_file is not None:
       )
 
       # Question
-      result = rag_chain.invoke({question})
+      result = rag_chain.invoke(question)
       st.write(result)
