@@ -1,3 +1,4 @@
+# 로컬 개발시에는 주석처리
 __import__('pysqlite3')
 import sys
 sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
