@@ -14,6 +14,7 @@ from langchain_openai import ChatOpenAI
 from langchain import hub
 from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
+from langchain_core.callbacks.base import BaseCallbackHandler
 import streamlit as st
 import chromadb
 from streamlit_extras.buy_me_a_coffee import button
@@ -72,6 +73,17 @@ if uploaded_file is not None:
   # Chroma DB
   db = Chroma.from_documents(texts, embeddings_model)
 
+  # 스트밍 처리할 Handler 생성
+  class StreamHandler(BaseCallbackHandler):
+    def __init__(self, container, initial_text=""):
+      self.container = container
+      self.text = initial_text
+
+    def on_llm_new_token(self, token: str, **kwargs) -> None:
+      self.text += token
+      self.container.markdown(self.text)
+
+
   # User Input
   st.header("PDF에게 질문해보세요!!")
   question = st.text_input("질문을 입력하세요")
@@ -92,16 +104,18 @@ if uploaded_file is not None:
       prompt = hub.pull("rlm/rag-prompt")
 
       # Generate
+      chat_box = st.empty()
+      stream_handler = StreamHandler(chat_box)
+      generate_llm = ChatOpenAI(model="gpt-4o-mini", temperature=0, openai_api_key=openai_key, streaming=True, callbacks=[stream_handler])
+      
       def format_docs(docs):
         return "\n\n".join([doc.page_content for doc in docs])
 
       rag_chain = (
         {"context": retriever_from_llm | format_docs, "question": RunnablePassthrough()}
         | prompt
-        | llm
+        | generate_llm
         | StrOutputParser()
       )
-
       # Question
       result = rag_chain.invoke(question)
-      st.write(result)
