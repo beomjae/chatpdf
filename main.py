@@ -16,6 +16,7 @@ from langchain_core.output_parsers import StrOutputParser
 from langchain_core.runnables import RunnablePassthrough
 import streamlit as st
 import chromadb
+from streamlit_extras.buy_me_a_coffee import button
 
 
 # 제목
@@ -33,6 +34,9 @@ if uploaded_file is not None and uploaded_file.size > 5 * 1024 * 1024:
   st.error("파일 크기가 5MB를 초과합니다. 더 작은 파일을 업로드해주세요.")
   uploaded_file = None
 st.write("---")
+
+# Buy me a coffee
+button(username="jejupeter", floating=True, width=221)
 
 def pdf_to_document(uploaded_file):
   temp_dir = tempfile.TemporaryDirectory()
